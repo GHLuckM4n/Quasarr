@@ -1943,6 +1943,9 @@ def setup_captcha_routes(app):
                     .then(data => {
                         if (data.action === 'captcha_required') {
                             filecryptCookies = data.cookies || filecryptCookies || [];
+                            if (data.url) {
+                                document.getElementById("link-hidden").value = data.url;
+                            }
                             document.getElementById("captcha-key").innerHTML = '<p style="word-break: break-all;"><b>Package:</b> ' + packageTitleText + '</p><p style="word-break: break-all;">Proof-of-work cleared. Solve CutCaptcha to decrypt links.</p>';
                             var puzzleCaptcha = document.getElementById("puzzle-captcha");
                             if (puzzleCaptcha) puzzleCaptcha.style.display = "block";

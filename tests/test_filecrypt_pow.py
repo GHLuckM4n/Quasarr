@@ -361,6 +361,22 @@ class FilecryptPowTests(unittest.TestCase):
             result,
         )
 
+    def test_go_resolver_ignores_internal_filecrypt_terminal_url(self):
+        session = requests.Session()
+        response = SimpleNamespace(
+            url="https://filecrypt.invalid/Go/deadbeef.html",
+            headers={},
+        )
+        session.get = Mock(return_value=response)
+
+        result = filecrypt._resolve_filecrypt_go_urls(
+            session,
+            {"User-Agent": "agent"},
+            ["https://filecrypt.invalid/Go/deadbeef.html"],
+        )
+
+        self.assertEqual([], result)
+
 
 if __name__ == "__main__":
     unittest.main()

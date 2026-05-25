@@ -560,6 +560,11 @@ def _extract_filecrypt_go_urls(html, base_url):
     return urls
 
 
+def _is_filecrypt_hostname(hostname):
+    parts = (hostname or "").lower().split(".")
+    return len(parts) >= 2 and parts[-2] == "filecrypt"
+
+
 def _resolve_filecrypt_go_urls(session, headers, go_urls):
     links = []
     for go_url in go_urls:
@@ -574,8 +579,8 @@ def _resolve_filecrypt_go_urls(session, headers, go_urls):
         if redirect_url:
             links.append(urljoin(go_url, redirect_url))
             continue
-        if go_response.url and not urlparse(go_response.url).netloc.endswith(
-            "filecrypt.cc"
+        if go_response.url and not _is_filecrypt_hostname(
+            urlparse(go_response.url).hostname
         ):
             links.append(go_response.url)
     return links
