@@ -228,10 +228,24 @@ def main():
 
         checklist = []  # (passed: bool, label, fix hint)
 
+        # --locked keeps these commands from silently re-syncing uv.lock, so a
+        # pyproject.toml change without a matching lock update is surfaced below.
+        print("\n🔒 --- LOCKFILE (uv lock --check) ---")
+        lock = run(["uv", "lock", "--check"], check=False)
+        checklist.append(
+            (
+                lock.returncode == 0,
+                "Lockfile up to date (uv.lock vs pyproject.toml)",
+                "Run `uv lock` locally and commit the updated `uv.lock`.",
+            )
+        )
+
         print("\n🔍 --- LINT (ruff check) ---")
-        lint = run(["uv", "run", "ruff", "check", "."], check=False)
+        lint = run(["uv", "run", "--locked", "ruff", "check", "."], check=False)
         print("\n🎨 --- FORMAT (ruff format --check) ---")
-        fmt = run(["uv", "run", "ruff", "format", "--check", "."], check=False)
+        fmt = run(
+            ["uv", "run", "--locked", "ruff", "format", "--check", "."], check=False
+        )
         style_ok = lint.returncode == 0 and fmt.returncode == 0
         checklist.append(
             (
@@ -243,7 +257,17 @@ def main():
 
         print("\n🧪 --- TESTS ---")
         test = run(
-            ["uv", "run", "python", "-m", "unittest", "discover", "-s", "tests"],
+            [
+                "uv",
+                "run",
+                "--locked",
+                "python",
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                "tests",
+            ],
             check=False,
         )
         checklist.append(
