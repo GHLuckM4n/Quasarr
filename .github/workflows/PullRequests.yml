@@ -54,7 +54,15 @@ jobs:
           # instead. Same-repo PRs (the author's own dev→main) keep --ci.
           if [ -n "$HEAD_REPO" ] && [ "$HEAD_REPO" != "$GITHUB_REPO" ]; then
             echo "🔱 Fork PR ($HEAD_REPO) — running checks in no-push mode..."
-            uv run pre-commit.py --check
+            # --locked stops the outer invocation from refreshing uv.lock before
+            # the check runs.
+            uv run --locked pre-commit.py --check
+            # Trust guard, independent of which pre-commit.py the fork shipped:
+            # a stale checker that ignores --check would run the mutating path
+            # (auto-format/version-bump/lock-refresh) and still exit 0. Fail the
+            # job if the committed tree was modified at all.
+            echo "🔎 Verifying the checker left the committed tree unmodified..."
+            git diff --exit-code HEAD
           else
             echo "🛠️ Internal PR — running full maintenance..."
             uv run pre-commit.py --ci
